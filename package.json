@@ -1,0 +1,68 @@
+{
+  "name": "taxi-kiev",
+  "version": "1.0.0",
+  "description": "taxi kiev ",
+  "keywords": [
+    "react",
+    "reflux",
+    "react-router"
+  ],
+  "main": "index.html",
+  "scripts": {
+    "start": "gulp clean && gulp",
+    "test": "jest"
+  },
+  "author": "DenGZR",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DenGZR/taxi-kiev-with-reflux"
+  },
+  "devDependencies": {
+    "babel-core": "^6.1.2",
+    "babel-jest": "^5.3.0",
+    "babel-loader": "^6.1.0",
+    "babel-preset-es2015": "^6.1.2",
+    "babel-preset-react": "^6.1.2",
+    "babel-preset-stage-0": "^6.5.0",
+    "del": "^2.0.2",
+    "graceful-fs": "^4.1.3",
+    "gulp": "^3.9.0",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-connect": "^2.2.0",
+    "gulp-less": "*",
+    "gulp-livereload": "^3.8.1",
+    "gulp-load-plugins": "^1.1.0",
+    "gulp-size": "^2.0.0",
+    "gulp-uglify": "^1.4.2",
+    "gulp-util": "^3.0.7",
+    "gulp-watch": "^4.3.5",
+    "jest-cli": "^0.7.1",
+    "object-assign": "^4.0.1",
+    "orchestrator": "^0.3.7",
+    "react-addons-test-utils": "^0.14.2",
+    "webpack": "^1.12.3",
+    "webpack-stream": "^3.1.0"
+  },
+  "dependencies": {
+    "axios": "^0.9.1",
+    "history": "^1.13.0",
+    "react": "^0.14.2",
+    "react-bootstrap": "^0.29.0",
+    "react-dom": "^0.14.2",
+    "react-loader": "^2.4.0",
+    "react-router": "^2.4.1",
+    "reflux": "^0.3.0"
+  },
+  "jest": {
+    "scriptPreprocessor": "<rootDir>/node_modules/babel-jest",
+    "unmockedModulePathPatterns": [
+      "<rootDir>/node_modules/react",
+      "<rootDir>/node_modules/react-dom",
+      "<rootDir>/node_modules/react-addons-test-utils",
+      "<rootDir>/node_modules/fbjs",
+      "<rootDir>/node_modules/object-assign"
+    ]
+  }
+}
