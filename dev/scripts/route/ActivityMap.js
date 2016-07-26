@@ -142,7 +142,7 @@ class Root extends Component {
         return (
             <div className="activity-map">
                 <div className="row">
-                    <div className="col-sm-8" style={{height: '500px'}}>
+                    <div className="col-sm-8" style={{height: '600px'}}>
                         <GoogleMap
                            bootstrapURLKeys={{
                              key: 'AIzaSyCWK6ZJN_I1B7yR_WvOh9jmK8KU-LOA1IA',

@@ -51,3 +51,19 @@ export class Alert extends Component {
         );
     }
 }
+
+export class AlertPopup extends Component {
+
+    render() {
+        const {children, type = config.defaultType, onClose, isOpened } = this.props;
+        const {title = config.title[type]} = this.props;
+        const isShow = isOpened ? "" : " hide"
+        return (
+            <div className={`alert ${config.alert[type]} alert-dismissible`+ isShow}>
+              <button type="button" className="close" onClick={onClose}>×</button>
+              <h4><i className={`icon fa ${config.icon[type]}`}/>{title}</h4>
+              {children}
+            </div>
+        );
+    }
+}

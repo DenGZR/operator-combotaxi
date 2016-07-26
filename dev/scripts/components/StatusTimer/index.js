@@ -40,8 +40,11 @@ export class StatusTimer extends Component {
     }
 
     componentWillUnmount() {
+        console.log(window.globalHandlers);
         window.globalHandlers = window.globalHandlers.filter(handler=>handler === this._updater);
         clearInterval(window.globalInterval);
+        //window.globalHandlers = [];
+
     }
 
     setParentColor(statusClass) {

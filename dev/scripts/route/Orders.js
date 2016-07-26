@@ -8,19 +8,18 @@ import {StatusSelect} from "../components/StatusSelect"
 import {PopupOrderDescription, BtnOrderDescription} from "../components/PopupOrderDescription"
 import {User} from "../components/User"
 import {Waypoints} from "../components/Waypoints"
-import {makeRequest, Endpoints} from "../utils/api"
+import {makeRequest, Endpoints, loadOrder} from "../utils/api"
 import {Order, OrderCollection} from "../models/Order"
 
 
 class OperatorStrip extends Component {
     constructor(props) {
         super(props);
-        this.handleOrderAction = this.handleOrderAction.bind(this);
         this.loadData = this.loadData.bind(this);
         this.togglePopup = this.togglePopup.bind(this);
 
         this.state = {
-            orders: [],
+            orders: null,
             showPopup: false,
             currentOrder: null,
             filters: {
@@ -55,12 +54,16 @@ class OperatorStrip extends Component {
 
 
     loadData() {
-        makeRequest(Endpoints.GET_ORDER_LIST())
+      loadOrder()
             .then(response=> {
-                //console.log(response);
-                this.setState({
-                    orders: response.data
-                })
+              debugger
+                let {orders} = this.state.orders;
+                console.log(this.state.orders._mapOfOrders);
+                let newOrder = OrderCollection.fromServer(response.data).getFreeOrders();
+                orders = Object.assign({},orders,newOrder);
+                //orders = { ...orders, ...newOrder }
+                console.log(orders);
+                this.setState({ orders })
             })
     }
 
@@ -83,14 +86,9 @@ class OperatorStrip extends Component {
     }
 
     componentWillUnmount() {
+      //console.log(this._autoUpdate);
         clearInterval(this._autoUpdate);
-    }
 
-    returnOrder(orderId) {
-        this.setState({
-            orderPull: this.state.orderPull.concat([orderId]),
-            ownOrders: this.state.ownOrders.filter(i=>i != orderId)
-        })
     }
 
     changeOrderStatus(newStatusType,order_id) {
@@ -114,33 +112,18 @@ class OperatorStrip extends Component {
       .catch(error=>console.log('Server response Error :', error));
     }
 
-    takeOrder(orderId) {
-        this.setState({
-            orderPull: this.state.orderPull.filter(i=>i != orderId),
-            ownOrders: this.state.ownOrders.concat([orderId])
-        })
-    }
-
-    handleOrderAction(e) {
-        debugger;
-        const {action, orderId} = e.target.dataset;
-        switch (action) {
-            case "returnOrder":
-                this.returnOrder(parseInt(orderId));
-                break;
-            case "takeOrder":
-                this.takeOrder(parseInt(orderId));
-                break;
-        }
-    }
 
     render() {
 
-        const orders = OrderCollection.fromServer(this.state.orders);
-        const orderPull = orders.getFreeOrders().toArray().sort(byStatusDuration);
+        //const orders = OrderCollection.fromServer(this.state.orders);
+        let { orders } = this.state;
+        if (!orders) {
+          return <h1></h1>
+        }
+        const orderPull = orders.toArray().sort(byStatusDuration);
         console.log('fromServer', orders);
         console.log('orderPull', orderPull);
-        const ownOrders = orders.getByOperator(this.state.myOperatorId).toArray().sort(byStatusDuration);
+        //const ownOrders = orders.getByOperator(this.state.myOperatorId).toArray().sort(byStatusDuration);
 
         return (
             <div>

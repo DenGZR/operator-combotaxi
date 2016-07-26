@@ -8,6 +8,9 @@ export const GET_CURRENT_TARIFF = () => ({path: `/api/client/tariff/getcurrent`,
 export const GET_AUTH_TOKEN = () => ({path: `/api/operator/login`, method: "POST"});
 export const REMOVE_AUTH_TOKEN = () => ({path: `/api/operator/logout`, method: "GET"});
 export const GET_ORDER_LIST = () => ({path: `/api/operator/orders/list`, method: "GET"});
+// получить список измененых заказов по  time_stamp
+export const GET_ORDER_LIST_NEW = (time_stamp) => ({path: `/api/operator/orders/list?status=new` + (time_stamp ? "&time_stamp="+time_stamp : ""), method: "GET"});
+
 export const GET_DRIVER_LIST = () => ({path: `/api/operator/drivers/list`, method: "GET"});
 export const GET_DRIVER_INFO = () => ({path: `/api/driver/getinfo`, method: "GET"});
 export const GET_DRIVER_DESCRIPTION = ( driver_id ) => ({path: `/api/operator/driver/id/` + driver_id, method: "GET"});

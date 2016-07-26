@@ -86,9 +86,9 @@ const byStatusDuration = ((/*Order*/a, /*Order*/b)=> {
     let result = 0;
 
     if (a.statusDurationPct < b.statusDurationPct || a.id > b.id) {
-        result = 1;
-    } else if (a.statusDurationPct > b.statusDurationPct || a.id < b.id) {
         result = -1;
+    } else if (a.statusDurationPct > b.statusDurationPct || a.id < b.id) {
+        result = 1;
     }
   return result;
 });

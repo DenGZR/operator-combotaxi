@@ -1,17 +1,20 @@
 import React, {Component} from 'react'
 import ReactDOM from 'react-dom'
 import GoogleMap from 'google-map-react'
+import Portal from 'react-portal'
 import {Grid, Row, Col} from 'react-bootstrap'
 import {makeRequest, Endpoints} from '../utils/api'
 import {autoUpdater} from '../utils/autoUpdater'
+import { networkManager } from '../utils/service'
 import {Point} from '../structures/Point'
 import Marker from "../components/Marker"
 import {InputPlace} from '../components/InputPlace'
 import {priceTypeName} from '../dicts/priceTypes'
-import {Alert, TYPE_ERROR, TYPE_INFO} from '../components/Alert'
+import { AlertPopup, TYPE_ERROR, TYPE_INFO, TYPE_SUCCESS} from '../components/Alert'
 
 
 class Order {
+
     constructor() {
         this.addAddon = this.addAddon.bind(this);
         this.hasAddon = this.hasAddon.bind(this);
@@ -33,10 +36,28 @@ class Order {
             on_city: false
         };
     }
+    clearData() {
+
+      return this._data = {
+          client_phone: "",
+          client_first_name: "",
+          client_last_name: "",
+          client_middle_name: "",
+          start_point: new Point(),
+          end_point: new Point(),
+          comment: null,
+          way_points: [],
+          scheduled: false,
+          scheduled_at: '',
+          passengers: 1,
+          tariff_addons: [],
+          on_city: false
+      }
+    }
 
     prepare() {
         return {
-            client_phone: this._data.client_phone,
+            client_phone: "380" + this._data.client_phone,
             client_first_name: this._data.client_first_name,
             client_last_name: this._data.client_last_name,
             client_middle_name: this._data.client_middle_name,
@@ -128,12 +149,17 @@ class Order {
     }
 
     ClientInfo(key, val) {
-      this._data[key] = val;
+      if(!val) {
+      return  this._data[key];
+      }
+      return this._data[key] = val;
     }
+
+
 }
 
-
 class OrderCreateForm extends Component {
+
     constructor(props) {
         super(props);
         this.loadData = this.loadData.bind(this);
@@ -144,10 +170,14 @@ class OrderCreateForm extends Component {
         this.state = {
             order: new Order(),
             addons: [],
-            infoMes: null
+            serverResponse: {
+              result : {
+                 textMass: '',
+                 isError: false
+              }
+            },
+            showPortal: false
         };
-
-
     }
 
     loadData() {
@@ -168,18 +198,24 @@ class OrderCreateForm extends Component {
 
     handleCreateOrder(e) {
         e.preventDefault();
-        const {order} = this.state;
+        let {order, serverResponse, showPortal } = this.state;
         let createdOrder = order.prepare();
         // добавлено для теста отправки order
         console.log(" send order",  order.prepare());
-        // добавлено для теста отправки order
+
         makeRequest(Endpoints.POST_CREATE_ORDER(), createdOrder )
            .then(response=>{
-             console.log('Server response :', response);
-             let newState = checkServerResponse(response,this.state);
-             this.setState(newState);
+             let {netWorkManager} = response;
+             showPortal = netWorkManager.result.isError;
+             serverResponse = netWorkManager;
+             if(!serverResponse.result.isError) {
+                order = new Order();
+             }
+             this.setState({showPortal,serverResponse,order});
            })
-           .catch(error=>console.log('Server response Error :', error));
+           .catch(error=>{
+             console.log('Server response Error :', error)
+           });
     }
 
     placeAdd(point) {
@@ -235,7 +271,8 @@ class OrderCreateForm extends Component {
       let value = e.target.value;
       let inputName = e.target.getAttribute("data-input-name");
       if(inputName === 'client_phone') {
-        value = '380' + value;
+        //checkValidation()
+        value = value;
       }
       if(inputName === 'passengers') {
         value = parseInt(value, 10);
@@ -245,13 +282,23 @@ class OrderCreateForm extends Component {
       this.update();
     }
 
-    render() {
-        const {currentTariff, order, infoMes } = this.state;
-        let infoMesType = TYPE_ERROR;
+    handleAlertPopup() {
+      let {showPortal} = this.state;
+      showPortal = !showPortal;
+      this.setState({showPortal});
+    }
 
+    render() {
+
+        const {currentTariff, order, infoMes, showPortal, serverResponse} = this.state;
+
+        let { textMass, isError } = serverResponse.result;
+        let infoMesType = isError ? TYPE_ERROR : TYPE_SUCCESS;
+
+      // <Portal closeOnEsc closeOnOutsideClick isOpened={showPortal} onClose={this.handleClosePortal.bind(this)}>
         return (
-            <form onSubmit={this.handleCreate} className="order-create">
-                <Alert type={infoMesType}>"infoMes"</Alert>
+            <form onSubmit={this.handleCreate} className="order-create" >
+                <AlertPopup type={infoMesType} isOpened={showPortal} onClose={this.handleAlertPopup.bind(this)}>{textMass}</AlertPopup>
                 <InputPlace key={order.startPoint.id}
                             point={order.startPoint}
                             onChange={this.placeChange.bind(this, order.startPoint.id)}
@@ -295,6 +342,7 @@ class OrderCreateForm extends Component {
                            id="client-phone"
                            aria-describedby="basic-addon3"
                            data-input-name="client_phone"
+                           value={order.ClientInfo("client_phone")}
                            onChange={this.handleClientInfo.bind(this)}/>
                     </div>
 
@@ -305,6 +353,7 @@ class OrderCreateForm extends Component {
                            id="client-first-name"
                            aria-describedby="basic-addon3"
                            data-input-name="client_first_name"
+                           value={order.ClientInfo("client_first_name")}
                            onChange={this.handleClientInfo.bind(this)}/>
                     </div>
                     <div className="input-group">
@@ -375,6 +424,9 @@ class Root extends Component {
             'lng' : point.lng
           }
           break;
+        case 'deleteAllMarker':
+          markers = {}
+          break;
       }
       this.setState({ markers: markers });
     }
@@ -404,7 +456,7 @@ class Root extends Component {
       console.log(MarkerList);
         return (
           <Row>
-            <Col xs={6} style={{height: '500px'}}>
+            <Col xs={6} style={{height: '600px'}}>
               <GoogleMap
                  bootstrapURLKeys={{
                    key: 'AIzaSyCWK6ZJN_I1B7yR_WvOh9jmK8KU-LOA1IA',
